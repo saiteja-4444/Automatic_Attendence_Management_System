@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <!-- Include jsPDF library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<!-- Include jsPDF AutoTable plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.18/jspdf.plugin.autotable.min.js"></script>
+
+
+    <style>
+      /* Custom styles for modal transitions */
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100" x-data="attendanceApp()">
+    <nav class="bg-blue-600 text-white px-4 py-3">
+      <div class="flex items-center justify-between">
+        <h1 class="text-lg font-bold">Attendance System</h1>
+        <div class="space-x-4">
+          <button
+            class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400"
+            @click="fetchProfileData()"
+          >
+            View Profile
+          </button>
+
+          <button
+          class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400"
+          @click="downloadMarks()"
+        >
+          Download Marks
+        </button>
+        
+         <a href="/viewdata"
+         class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400">Logout</a>
+       
+        </div>
+      </div>
+    </nav>
+
+    <div
+      class="container mx-auto mt-8 px-4"
+      x-data="{ showMarks: false, attendance: [], month: '', date: '', error: '' }"
+    >
+      <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-3xl font-bold mb-4">Student DashBoard</h2>
+
+        <h2 class="text-xl font-bold mb-4">Search Attendance</h2>
+        <form @submit.prevent="fetchAttendance">
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label for="month" class="block font-medium text-gray-700"
+                >Select Month</label
+              >
+              <select
+                id="month"
+                class="w-full border-gray-300 rounded mt-2"
+                x-model="month"
+              >
+                <option value="" disabled selected>Choose a month</option>
+                <template
+                  x-for="m in ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']"
+                  :key="m"
+                >
+                  <option :value="m" x-text="m"></option>
+                </template>
+              </select>
+            </div>
+            <div>
+              <label for="date" class="block font-medium text-gray-700"
+                >Select Date</label
+              >
+              <input
+                type="date"
+                id="date"
+                class="w-full border-gray-300 rounded mt-2"
+                x-model="date"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-400"
+          >
+            Search
+          </button>
+        </form>
+        <p class="text-red-500 mt-2" x-text="error"></p>
+      </div>
+
+      <div class="bg-white p-6 mt-6 rounded shadow">
+        <h2 class="text-xl font-bold mb-4">Attendance Records</h2>
+        <table class="w-full border-collapse border border-gray-300">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="border border-gray-300 px-4 py-2">Roll No</th>
+              <th class="border border-gray-300 px-4 py-2">Timing</th>
+              <th class="border border-gray-300 px-4 py-2">Status</th>
+              <th class="border border-gray-300 px-4 py-2">Date</th>
+              <th class="border border-gray-300 px-4 py-2">Month</th>
+            </tr>
+          </thead>
+          <tbody id="attandenceTable"></tbody>
+        </table>
+      </div>
+
+      <!-- Profile Modal -->
+      <div
+        x-show="showProfile"
+        x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      >
+        <div class="bg-white rounded p-6 w-11/12 md:w-1/3">
+          <h2 class="text-xl font-bold mb-4">User Profile</h2>
+          <div class="flex">
+            <div class="">
+              <p>
+                <strong>Name:</strong>
+                <span x-text="profileData.name || 'Loading...'"></span>
+              </p>
+              <p>
+                <strong>Roll No:</strong>
+                <span x-text="profileData.roll_no || 'Loading...'"></span>
+              </p>
+              <p>
+                <strong>Class:</strong>
+                <span x-text="profileData.phone || 'Loading...'"></span>
+              </p>
+              <p>
+                <strong>Email:</strong>
+                <span x-text="profileData.email || 'Loading...'"></span>
+              </p>
+              <div class="mt-2">
+                <a
+                  href="/studentdash"
+                  class="mt-44 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-400"
+                >
+                  Close
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Marks Modal -->
+      <div
+        x-show="showMarks"
+        x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      >
+        <div class="bg-white rounded p-6 w-11/12 md:w-1/3">
+          <h2 class="text-xl font-bold">Marks Details</h2>
+          <table class="w-full mt-4">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="px-4 py-2">Subject</th>
+                <th class="px-4 py-2">Marks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border px-4 py-2">Math</td>
+                <td class="border px-4 py-2">95</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">Science</td>
+                <td class="border px-4 py-2">89</td>
+              </tr>
+              <tr>
+                <td class="border px-4 py-2">English</td>
+                <td class="border px-4 py-2">92</td>
+              </tr>
+            </tbody>
+          </table>
+          <button
+            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-400"
+            @click="showMarks = false"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script>
+      const roll_no = localStorage.getItem("roll");
+      console.log(roll_no, "hdbvkjbfkj");
+      function fetchAttendance() {
+        const endpoint = `http://localhost:3000/studentdash/${roll_no}`; // Make sure your API is running
+        const params = [];
+        if (this.date) params.push(`date=${this.date}`);
+        if (this.month) params.push(`month=${this.month}`);
+
+        const queryString = params.length > 0 ? `?${params.join("&")}` : "";
+
+        fetch(endpoint + queryString)
+          .then((response) => response.json())
+          .then((data) => {
+            // console.log(data, "getting response"); // Check response in the console
+            if (data && Array.isArray(data)) {
+              // document
+              //   .getElementById("attandenceTable")
+              //   .setAttribute("x-data", `{punches : ${JSON.stringify(data)}}`);
+              let innerHTML = "";
+              for (const item of data) {
+                innerHTML += `<tr>
+                <td class="border border-gray-300 px-4 py-2 data">${item.roll_no}</td>
+                <td
+                  class="border border-gray-300 px-4 py-2"
+                >${item.timing}</td>
+                <td
+                  class="border border-gray-300 px-4 py-2"
+                >${item.month}</td>
+                <td
+                  class="border border-gray-300 px-4 py-2"
+                >${item.date}</td>
+                <td
+                  class="border border-gray-300 px-4 py-2"
+                >${item.status}</td>
+               
+              </tr>`;
+              }
+              document.getElementById("attandenceTable").innerHTML = innerHTML;
+            } else {
+              this.error = "No attendance data found for the given filters.";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching attendance:", error);
+            this.error = "Failed to fetch attendance data.";
+          });
+      }
+    </script>
+    <script>
+      function attendanceApp() {
+        return {
+          showProfile: false,
+          profileData: {},
+
+          fetchProfileData() {
+            fetch(`http://localhost:3000/profile/${roll_no}`)
+              .then((res) => res.json())
+              .then((data) => {
+                this.profileData = data;
+                this.showProfile = true;
+              })
+              .catch(console.log);
+          },
+        };
+      }
+//       async function downloadMarks() {
+//     const roll_no = localStorage.getItem("roll"); // Ensure the roll number is stored in localStorage
+//     const endpoint = `http://localhost:3000/marks/${roll_no}`;
+
+//     try {
+//         const response = await fetch(endpoint);
+//         if (!response.ok) {
+//             throw new Error("Failed to fetch marks data");
+//         }
+
+//         const data = await response.json();
+
+//         // Create a new PDF document
+//         const { jsPDF } = window.jspdf;
+//         const doc = new jsPDF();
+
+//         // Add Title
+//         doc.setFontSize(18);
+//         doc.text("Marks Report", 10, 10);
+
+//         // Add details for each record
+//         let yPosition = 30; // Initial Y position in the PDF
+//         doc.setFontSize(12);
+
+//         data.forEach((item, index) => {
+//             doc.text(`Subject: ${item.subject}`, 10, yPosition);
+//             doc.text(`Marks: ${item.marks}`, 10, yPosition + 10);
+//             doc.text(`Semester: ${item.sem}`, 10, yPosition + 20);
+//             doc.text(`Date: ${item.dl}`, 10, yPosition + 30);
+//             yPosition += 50; // Space between records
+//             if (index < data.length - 1) {
+//                 doc.addPage(); // Add new page for next record if needed
+//             }
+//         });
+
+//         // Save the PDF
+//         doc.save("Marks_Report.pdf");
+//     } catch (error) {
+//         console.error("Error downloading marks:", error);
+//         alert("Failed to download marks. Please try again.");
+//     }
+// }
+
+async function downloadMarks() {
+    const roll_no = localStorage.getItem("roll"); // Ensure the roll number is stored in localStorage
+    const endpoint = `http://localhost:3000/marks/${roll_no}`;
+
+    try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+            throw new Error("Failed to fetch marks data");
+        }
+
+        const data = await response.json();
+
+        // Create a new PDF document
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Add Title
+        doc.setFontSize(18);
+        doc.text("Marks Report", 10, 10);
+
+        // Add student details section
+        const studentInfo = data[0]; // Assuming there's at least one record to extract the student details
+
+        doc.setFontSize(12);
+        doc.text(`Name: ${studentInfo.sname}`, 10, 20);
+        doc.text(`Roll No: ${studentInfo.rno}`, 10, 30);
+        doc.text(`Semester: ${studentInfo.sem}`, 10, 40);
+        doc.text(`Email: ${studentInfo.semail}`, 10, 50);
+        doc.text(`Phone No: ${studentInfo.pno}`, 10, 60);
+        doc.text(`Date of Issue: ${studentInfo.dl}`, 10, 70);
+
+        // Add some space before marks table
+        let yPosition = 90;
+
+        // Define the table column headers
+        const headers = ['Subject', 'Marks', 'Semester', 'Date'];
+
+        // Define the data to populate the table (mapping the fetched data)
+        const rows = data.map(item => [item.subject, item.marks, item.sem, item.dl]);
+
+        // Add the table
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: yPosition,
+            theme: 'grid', // Optional: Adds grid lines to the table
+            headStyles: { fillColor: [0, 123, 255] }, // Optional: Customize header row color
+            margin: { top: 10 },
+            styles: {
+                fontSize: 12, // Set font size for the table text
+            }
+        });
+
+        // Save the PDF
+        doc.save("Marks_Report.pdf");
+    } catch (error) {
+        console.error("Error downloading marks:", error);
+        alert("Failed to download marks. Please try again.");
+    }
+}
+
+
+    </script>
+
+  </body>
+</html>

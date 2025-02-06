@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Attendance System</title>
+</head>
+<body x-data="attendanceApp()" class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white px-4 py-3">
+        <div class="flex items-center justify-between">
+            <h1 class="text-lg font-bold">Attendance System</h1>
+            <div class="space-x-4">
+                <button 
+                   class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400"
+                   @click="fetchProfileData()">
+                    View Marks
+                </button>
+                <button 
+                   class="px-4 py-2 bg-green-500 rounded hover:bg-green-400"
+                   @click="downloadPDF()">
+                    Download PDF
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Marks Table -->
+    <div class="mt-6 px-4">
+        <h2 class="text-xl font-bold mb-4">Student Marks</h2>
+        <table class="table-auto w-full bg-white shadow-md rounded">
+            <thead>
+                <tr class="bg-blue-500 text-white">
+                    <th class="px-4 py-2">Roll No</th>
+                    <th class="px-4 py-2">Name</th>
+                    <th class="px-4 py-2">Subject</th>
+                    <th class="px-4 py-2">Marks</th>
+                    <th class="px-4 py-2">Section</th>
+                    <th class="px-4 py-2">Semester</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="mark in profileData" :key="mark.id">
+                    <tr class="text-center border-b">
+                        <td class="px-4 py-2" x-text="mark.rno"></td>
+                        <td class="px-4 py-2" x-text="mark.sname"></td>
+                        <td class="px-4 py-2" x-text="mark.subject"></td>
+                        <td class="px-4 py-2" x-text="mark.marks"></td>
+                        <td class="px-4 py-2" x-text="mark.section"></td>
+                        <td class="px-4 py-2" x-text="mark.sem"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- JavaScript for Alpine.js -->
+    <script>
+        function attendanceApp() {
+            return {
+                profileData: [],
+
+                async fetchProfileData() {
+                    try {
+                        // Fetch data from API
+                        const response = await fetch("http://localhost:3000/marks");
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch marks data");
+                        }
+
+                        // Parse JSON data
+                        const data = await response.json();
+                        this.profileData = data;
+                    } catch (error) {
+                        console.error("Error fetching marks data:", error);
+                    }
+                },
+
+                downloadPDF() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+
+                    // Add title
+                    doc.setFontSize(18);
+                    doc.text("Student Marks Report", 20, 20);
+
+                    // Add table headers
+                    const headers = [["Roll No", "Name", "Subject", "Marks", "Section", "Semester"]];
+                    const rows = this.profileData.map(mark => [
+                        mark.rno, mark.sname, mark.subject, mark.marks, mark.section, mark.sem
+                    ]);
+
+                    // Create table
+                    doc.autoTable({
+                        startY: 30,
+                        head: headers,
+                        body: rows,
+                    });
+
+                    // Save the PDF
+                    doc.save("student-marks.pdf");
+                }
+            };
+        }
+    </script>
+
+</body>
+</html>

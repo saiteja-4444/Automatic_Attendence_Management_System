@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body x-data="attendanceApp()" class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-600 text-white px-4 py-3">
+        <div class="flex items-center justify-between">
+            <h1 class="text-lg font-bold">Attendance System</h1>
+            <div class="space-x-4">
+                <a href="/dash" class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400">View Marks</a>
+                <button 
+                   class="px-4 py-2 bg-blue-500 rounded hover:bg-blue-400"
+                   @click="fetchProfileData()">
+                    View Profile
+                </button>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="">
+        <img src="https://files.oaiusercontent.com/file-BAjViHVQFfPV4MQNKhdfkb?se=2024-11-26T10%3A52%3A52Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Db3ef87f5-fe73-42a9-977e-b83bf010da1e.webp&sig=IJ0%2B%2BkAc80dHhZk0%2BMQH01sCxyU%2B86ArbXxIxzgITBk%3D" alt="" class="w-screen h-screen">
+    </div>
+
+    <!-- Profile Modal -->
+    <div
+        x-show="showProfile"
+        x-cloak
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    >
+        <div class="bg-white rounded p-6 w-11/12 md:w-1/3">
+            <h2 class="text-xl font-bold mb-4">User Profile</h2>
+            <div class=" flex">
+
+                <div class="">
+                    <p><strong>Name:</strong> <span x-text="profileData.name || 'Loading...'"></span></p>
+                    <p><strong>Roll No:</strong> <span x-text="profileData.roll_no || 'Loading...'"></span></p>
+                    <p><strong>Class:</strong> <span x-text="profileData.phone || 'Loading...'"></span></p>
+                    <p><strong>Email:</strong> <span x-text="profileData.email || 'Loading...'"></span></p>
+                    <div class=" mt-2">
+        
+                        <a href="/viewdata" 
+                           class="mt-44 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-400">
+                            Close
+                    </a>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Alpine.js -->
+    <script>
+        const roll_no  = localStorage.getItem("roll")
+         console.log(roll_no,"hdbvkjbfkj")
+
+
+
+        function attendanceApp() {
+            return {
+                showProfile: false,
+                profileData: {},
+
+                async fetchProfileData() {
+                    try {
+                        // Show modal before data is loaded
+                        this.showProfile = true;
+
+                        // Fetch data from API
+                        const response = await fetch(`http://localhost:3000/profile/${roll_no}`);
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch profile data");
+                        }
+
+                        // Parse JSON data
+                        const data = await response.json();
+
+                        console.log(data, "getting student ")
+
+                        // Update Alpine.js state with fetched data
+                        this.profileData = data;
+                    } catch (error) {
+                        console.error("Error fetching profile data:", error);
+                        this.profileData = { name: "Error", roll_no: "-", phone: "-", email: "-" };
+                    }
+                }
+            };
+        }
+
+
+    </script>
+
+</body>
+</html>
