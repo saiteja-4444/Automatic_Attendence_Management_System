@@ -1,1 +1,1 @@
-# Automatic Attendence Management System
+# Face Recognition-Based Attendance System
