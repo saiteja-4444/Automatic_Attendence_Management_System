@@ -1,1 +1,1 @@
-# Face Recognition-Based Attendance System
+# Automated Attendance Management Using Deep Learning-Based Face Recognition
