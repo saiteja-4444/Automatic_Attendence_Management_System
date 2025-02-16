@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Attendance System</title>
+
+    <!-- CSS FILES -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="static/css/slick.css" />
+
+    <link href="static/css/tooplate-little-fashion.css" rel="stylesheet">
+    <!--
+
+Tooplate 2127 Little Fashion
+
+https://www.tooplate.com/view/2127-little-fashion
+
+-->
+</head>
+
+<body>
+
+
+
+    <section class="preloader">
+        <div class="spinner">
+            <span class="sk-inner-circle"></span>
+        </div>
+    </section>
+
+    <main>
+        <div class="container mt-5" style="
+        padding-top: 55px;
+        border-top-width: 71px;
+    ">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <a class="navbar-brand" href="index.html">
+                    <strong><span>Attendance</span> System</strong>
+                </a>
+
+                <div class="d-lg-none">
+                    <a href="sign-in.html" class="bi-person custom-icon me-3"></a>
+
+                    <a href="product-detail.html" class="bi-bag custom-icon"></a>
+                </div>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav mx-auto">
+                        <li class="nav-item active ">
+                            <a class="nav-link  " href="{{url_for('dash')}}"
+                              >Dashboard</a
+                            >
+                          </li>
+
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{url_for('addback')}}">Upload Data</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{url_for('view_students')}}">View Students</a>
+                        </li>
+
+                        <li class="nav-item active">
+                            <a class="nav-link" href="{{url_for('trainback')}}">Train Model </a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link active" href="{{url_for('marksback')}}">Marks Details</a>
+                        </li>
+
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/">Logout </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <section class="contact section-padding">
+            <center>
+                <div class="card text-white bg-secondary mb-3" style="height: 1550px;">
+                    <center>
+                        <div class="container">
+                            <div class="col-lg-6 col-12">
+                                <h4 class="mb-4">ADD <span> MARKS DETAILS\<a href="/view_marks" style="color:green">VIEW MARKS</a></span></h2>
+                                <center style="margin-left: 64px;">
+                                    <form action="{{url_for('marksback')}}" method="post">
+                                        <div class="form-floating">
+                                            <select name="student_id" required class="form-control">
+                                                <option value="" selected>Select Student</option>
+                                                {% for roll_no,name in students %}
+                                                    <option value="{{roll_no}}">{{name}} - {{roll_no}}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label for="student_id">Select Student</label>
+                                        </div><br/>
+                                        <div class="form-floating">
+                                            <select name="year" class="form-control" id="y" required>
+                                                <option value="">Select Year</option>
+                                                <option value="1">1st Year</option>
+                                                <option value="2">2nd Year</option>
+                                                <option value="3">3rd Year</option>
+                                                <option value="4">4th Year</option>
+                                            </select>
+                                            <label for="name">Select Year</label>
+                                        </div><br>
+                                        <div class="form-floating">
+                                            <select name="sem" id="s" class="form-control" required>
+                                                <option value="">Select Semester</option>
+                                                <option value="1-Sem">1st Semester</option>
+                                                <option value="2-Sem">2nd Semester</option>
+                                            </select>
+                                            <label for="name">Select Semester</label>
+                                        </div><br>
+                                        <div class="form-floating">
+                                            <select name="mid" id="sec" class="form-control" required>
+                                                <option value="">Select Option</option>
+                                                <option value="Mid-1">Mid-1</option>
+                                                <option value="Mid-2">Mid-2</option>
+                                            </select>
+                                            <label for="name">Select Option</label>
+                                        </div><br>
+                                        <div class="form-group" style="width:30vw;height:4vh;">
+                                            <input type="number" id="member" onkeyup="addFields()" name="rno"
+                                                class="form-control" placeholder="Number of Subjects" required style="
+                                                   width: 410px;
+                                                   height: 52px;
+                                               " />
+                                            <div id="container" />
+                                        </div>
+                                        <br>
+                                        <script type='text/javascript'>
+                                            function checkValues(e) {
+                                                let marks = e.target.val;
+                                                marks = parseInt(marks);
+
+                                                if(0 < marks < 50) {
+                                                    document.getElementById(e.getAttribute('id')).value = 0;
+                                                }
+                                            }
+                                            function addFields() {
+                                                // Generate a dynamic number of inputs
+                                                var number = document.getElementById("member").value;
+                                                // Get the element where the inputs will be added to
+                                                var container = document.getElementById("container");
+                                                // Remove every children it had before
+                                                while (container.hasChildNodes()) {
+                                                    container.removeChild(container.lastChild);
+                                                }
+                                                for (i = 0; i < number; i++) {
+                                                    // Append a node with a random text
+                                                    container.appendChild(document.createTextNode("Subject " + (i + 1)));
+                                                    // Create an <input> element, set its type and name attributes
+                                                    var input = document.createElement("input");
+                                                    input.type = "text";
+                                                    input.required = true;
+                                                    input.name = "subject" + i;
+                                                    input.className = "form-control";
+                                                    
+                                                    var input1 = document.createElement("input");
+                                                    input1.className = "form-control";
+                                                    container.appendChild(input);
+                                                    input1.name = "marks" + i;
+                                                    input1.type = "number";
+                                                    input1.min = 0;
+                                                    input1.max = 50;
+                                                    input1.required = true;
+                                                    container.appendChild(document.createTextNode("Marks " + (i + 1)));
+                                                    container.appendChild(input1);
+                                                    // Append a line break
+                                                    container.appendChild(document.createElement("br"));
+                                                }
+                                            }
+                                        </script>
+
+                                        <center>
+                                            <button type="submit"
+                                                class="btn btn-primary pull-xs-right tm-button tm-button-normal">Submit
+                                                Details
+                                            </button>
+                                        </center>
+                                    </form>
+                                </center>
+                            </div>
+                    </center>
+                </div>
+            </center>
+
+    </main>
+
+
+
+    <!-- JAVASCRIPT FILES -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/Headroom.js"></script>
+    <script src="static/js/jQuery.headroom.js"></script>
+    <script src="static/js/slick.min.js"></script>
+    <script src="static/js/custom.js"></script>
+
+</body>
+
+</html>

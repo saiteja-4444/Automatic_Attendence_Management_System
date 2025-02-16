@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Attendance System</title>
+
+        <!-- CSS FILES -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;700;900&display=swap" rel="stylesheet">
+
+        <link href="static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="static/css/bootstrap-icons.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="static/css/slick.css"/>
+
+        <link href="static/css/tooplate-little-fashion.css" rel="stylesheet">
+<!--
+
+Tooplate 2127 Little Fashion
+
+https://www.tooplate.com/view/2127-little-fashion
+
+-->
+    </head>
+    
+    <body>
+
+        <section class="preloader">
+            <div class="spinner">
+                <span class="sk-inner-circle"></span>
+            </div>
+        </section>
+    
+        <main>
+            <div class="container mt-5" style="
+            padding-top: 55px;
+            border-top-width: 71px;
+        ">
+                <center>{% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" style="width:400px;">
+                    <center>{{ message }} </center>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}</center>
+            </div>
+
+            <nav class="navbar navbar-expand-lg">
+                <div class="container">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <a class="navbar-brand" href="index.html">
+                        <strong><span>Attendance</span> System</strong>
+                    </a>
+
+                    <div class="d-lg-none">
+                        <a href="sign-in.html" class="bi-person custom-icon me-3"></a>
+
+                        <a href="product-detail.html" class="bi-bag custom-icon"></a>
+                    </div>
+
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav mx-auto">
+                          
+
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/">Home</a>
+                            </li>
+    
+                            <li class="nav-item active">
+                                <a class="nav-link" href="{{url_for('login')}}">Admin Login</a>
+                            </li>
+                            <li class="nav-item active">
+                                <a class="nav-link" href="{{url_for('prediction')}}">Take Attendance</a>
+                            </li>
+    
+                            <li class="nav-item active">
+                                <a class="nav-link " href="{{url_for('viewdata')}}">Attendance Details </a>
+                            </li>
+                            <li class="nav-item active">
+                                <a class="nav-link active" href="{{url_for('viewmarks')}}">View Mid Marks </a>
+                            </li>
+                            
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <section class="slick-slideshow">  
+                                <div>
+                                    <center><h2>MID MARKS INFORMATION</h2> </center>
+                                    <form class="/viewmarks" method="post">
+                                    <input type="number" name="year" placeholder="Enter year" id="getData">
+                                    <button type="submit">Submit</button>
+                                    </form>
+                                    
+                                    <table class="table table-striped table-hover"
+                                    style="border: 4px solid white; background-color:#10afa0 !important; margin-left: 10px;margin-top: 38px;"
+                                    width="1300">
+            
+                                
+                                    <b>
+                                        <th style="color:white;border: 3px solid white">Year</th>
+                                    </b>
+                                    <b>
+                                        <th style="color:white;border: 3px solid white">Semister</th>
+                                    </b>
+                                    <b>
+                                        <th style="color:white;border: 3px solid white">Exam Type</th>
+                                    </b>
+                                    <b>
+                                        <th style="color:white;border: 3px solid white">Subject Name</th>
+                                    </b>
+                                    <b>
+                                        <th style="color:white;border: 3px solid white">Marks</th>
+                                    </b>
+                                    <b>
+                                        <th style="color:white;border: 3px solid white">Uploaded Date</th>
+                                    </b>
+            
+            
+            
+            
+                                    </tr>
+                                    
+
+                                    {% for id,name,email,rno,pno,year,sem,sec,sub,marks,d1,comp in data %}
+                                    <tr>
+                                       
+                                        <td style="border: 3px solid white">{{year}}</td>
+                                        <td style="border: 3px solid white">{{sem}}</td>
+                                        <td style="border: 3px solid white">{{sec}}</td>
+                                        <td style="border: 3px solid white">{{sub}}</td>
+                                        <td style="border: 3px solid white">{{marks}}</td>
+                                        <td style="border: 3px solid white">{{d1}}</td>
+            
+            
+                                    </tr>
+                                    {% endfor %}
+            
+            
+                                </table>
+                            
+                </div>
+            </section>
+        </main>
+
+
+        <!-- <script>
+           const value = getElementById('getData').value();
+
+           console.log(value, "values")
+
+        </script> -->
+        <!-- JAVASCRIPT FILES -->
+        <script src="static/js/jquery.min.js"></script>
+        <script src="static/js/bootstrap.bundle.min.js"></script>
+        <script src="static/js/Headroom.js"></script>
+        <script src="static/js/jQuery.headroom.js"></script>
+        <script src="static/js/slick.min.js"></script>
+        <script src="static/js/custom.js"></script>
+
+    </body>
+</html>

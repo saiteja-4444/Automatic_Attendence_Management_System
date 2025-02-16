@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Attendance Dashboard</title>
+
+    <!-- CSS FILES -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <link href="static/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="static/css/bootstrap-icons.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="static/css/slick.css" />
+
+    <link href="static/css/tooplate-little-fashion.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .dashboard-card {
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-size: 1.2rem;
+      }
+      canvas {
+        background: #f9f9f9;
+        padding: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand" href="#">
+          <strong><span>Attendance</span> System</strong>
+        </a>
+
+        <div class="d-lg-none">
+          <a href="sign-in.html" class="bi-person custom-icon me-3"></a>
+
+          <a href="product-detail.html" class="bi-bag custom-icon"></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item active">
+              <a class="nav-link active" href="{{url_for('dash')}}"
+                >Dashboard</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('addback')}}">Upload Data</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="{{url_for('view_students')}}"
+                >View Students</a
+              >
+            </li>
+
+            <li class="nav-item active">
+              <a class="nav-link" href="{{url_for('trainback')}}"
+                >Train Model
+              </a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="{{url_for('marksback')}}"
+                >Marks Details</a
+              >
+            </li>
+
+            <li class="nav-item">
+              <a class="nav-link" href="/">Logout</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mt-4">
+      <h1 class="text-center mb-4">Attendance Dashboard</h1>
+
+      <!-- Cards Section -->
+      <div class="row text-center">
+        <div class="col-md-3">
+          <div class="card dashboard-card text-white bg-primary">
+            <div class="card-body">
+              <h5 class="card-title text-white">Total Students</h5>
+              <p class="card-text text-white" id="totalStudents">80</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card dashboard-card text-white bg-success">
+            <div class="card-body">
+              <h5 class="card-title text-white">Present Students</h5>
+              <p class="card-text text-white" id="presentStudents">44</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card dashboard-card text-white bg-danger">
+            <div class="card-body">
+              <h5 class="card-title text-white">Absent Students</h5>
+              <p class="card-text text-white" id="absentStudents">36</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card dashboard-card text-white bg-warning">
+            <div class="card-body">
+              <h5 class="card-title text-white">Last Punch-in</h5>
+              <p class="card-text text-white" id="lastPunchStudent">Lalit</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Selection -->
+      <section class="mt-4" id="filterByUser">
+        <h3 class="text-center">Filter by User</h3>
+        <div class="text-center">
+          <select
+            id="studentSelect"
+            class="form-select w-24 mx-auto"
+            onchange="linechart(this.value)"
+          >
+            <option selected disabled>Select a Student</option>
+            <!-- Options will be populated dynamically -->
+          </select>
+        </div>
+      </section>
+
+      <!-- Graph Section -->
+      <section class="mt-5" id="graphs">
+        <div class="row">
+          <div class="col">
+            <button onclick="downloadpdf(this.value)" id="download"></button>
+          </div>
+          <div class="col">
+            <h5 id="percent" hidden>Attendance Percentage</h5> 
+             <!-- <span id="msg" class="text-danger" hidden></span> -->
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <canvas id="lineGraph"></canvas>
+          </div>
+          <div class="col-md-4">
+            <canvas id="barGraph"></canvas>
+          </div>
+          <div class="col-md-2">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Scripts -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+      // Example API Response Data
+      const apiData = {
+        totalStudents: 80,
+        presentStudents: 44,
+        absentStudents: 36,
+        lastPunchStudent: "Lalit",
+        students: [
+          { name: "John Doe", roll_no: "101" },
+          { name: "Jane Smith", roll_no: "102" },
+        ],
+        attendance: [
+          {
+            date: "2024-11-20",
+            punch_in: "09:00 AM",
+            lunch_out: "01:00pm",
+            lunch_in: "02:00 PM",
+            punch_out: "06:00 PM",
+          },
+          {
+            date: "2024-11-21",
+            punch_in: "09:00 AM",
+            lunch_out: "01:00pm",
+            lunch_in: "02:00 PM",
+            punch_out: "06:00 PM",
+          },
+          {
+            date: "2024-11-22",
+            punch_in: "09:00 AM",
+            lunch_out: "01:00pm",
+            lunch_in: "02:00 PM",
+            punch_out: "06:00 PM",
+          },
+          {
+            date: "2024-11-23",
+            punch_in: "09:00 AM",
+            lunch_out: "01:00pm",
+            lunch_in: "02:00 PM",
+            punch_out: "06:00 PM",
+          },
+        ],
+      };
+
+      const gettingstudentdata = async () => {
+        try {
+          const response = await fetch("http://localhost:3000/students");
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const absentStudents = data.total_students - data.total_punches_today;
+          document.getElementById("totalStudents").innerText =
+            data.total_students;
+          document.getElementById("presentStudents").innerText =
+            data.total_punches_today;
+          document.getElementById("absentStudents").innerText = absentStudents;
+          document.getElementById("lastPunchStudent").innerText =
+            data.last_punch_student;
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      gettingstudentdata();
+
+      // Populate Dashboard Cards
+
+      const myFunc = async () => {
+        try {
+          const response = await fetch("http://localhost:3000/studentsdata");
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const studentSelect = document.getElementById("studentSelect");
+          data.forEach((student) => {
+            const option = document.createElement("option");
+            option.value = student.roll_no; // Set roll number as the value
+            option.innerText = `${student.name}`; // Display name and roll number
+            studentSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error fetching student data:", error);
+        }
+      };
+
+      myFunc();
+
+      const studentSelect = document.getElementById("studentSelect");
+      const downloadButton = document.getElementById("download");
+
+      // Event listener for student selection
+      studentSelect.addEventListener("change", function (event) {
+        const studentId = event.target.value;
+
+        // Fetch attendance data when a student is selected
+        fetchAttendanceData(studentId);
+
+        // Update the download button's text with the selected student ID
+        downloadButton.innerText = `Download PDF for Student ${studentId}`;
+      });
+
+      let lineChartInstance = null; // To track the chart instance
+
+      const linechart = async (roll_no) => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/punches/${roll_no}`
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json(); // Parse the JSON response
+          console.log("Raw data from server:", data);
+
+          // Ensure the response has valid data
+          if (!data || !data.data || !Array.isArray(data.data)) {
+            throw new Error("Punch data is not in the expected structure.");
+          }
+
+          const punchData = data.data; // Extract punch data
+
+          // Define labels for the events (x-axis)
+          const events = ["Day In", "Lunch Out", "Lunch In", "Day Out"];
+
+          // Helper function to convert time string to numeric value (e.g., hours + fractional minutes)
+          const parseTime = (timeStr) => {
+            const [hours, minutes, seconds] = timeStr.split(":").map(Number);
+            return hours + minutes / 60 + seconds / 3600;
+          };
+
+          // Prepare datasets for each date
+          const datasets = punchData
+            .map((entry) => {
+              const date = entry.punch_date; // Date
+              const punchTimes = entry.punch_timings; // Punch timings
+
+              if (!date || !Array.isArray(punchTimes)) {
+                console.error("Invalid entry format:", entry);
+                return null; // Skip invalid entries
+              }
+
+              return {
+                label: `Punch Data for ${date}`, // Dataset label with the date
+                data: punchTimes.map((time, index) => ({
+                  x: events[index] || `Event ${index + 1}`, // X-axis label
+                  y: parseTime(time), // Y-axis value (parsed time)
+                })),
+                backgroundColor: "rgba(75,192,192,0.2)",
+                borderColor: "rgba(75,192,192,1)",
+                borderWidth: 2,
+                tension: 0.4, // Smooth line
+                fill: false,
+              };
+            })
+            .filter((dataset) => dataset !== null); // Remove null datasets
+
+          // Get the context for the chart
+          const lineGraphCtx = document
+            .getElementById("lineGraph")
+            .getContext("2d");
+
+          // Destroy the old chart instance if it exists
+          if (lineChartInstance) {
+            lineChartInstance.destroy();
+          }
+
+          // Create the new chart
+          lineChartInstance = new Chart(lineGraphCtx, {
+            type: "line",
+            data: {
+              labels: events, // Punch events on X-axis
+              datasets: datasets, // Multiple datasets for different dates
+            },
+            options: {
+              responsive: true,
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Punch Events",
+                  },
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: "Punch Timings (HH:MM)",
+                  },
+                  ticks: {
+                    callback: (value) => {
+                      const hours = Math.floor(value);
+                      const minutes = Math.floor((value - hours) * 60);
+                      return `${hours.toString().padStart(2, "0")}:${minutes
+                        .toString()
+                        .padStart(2, "0")}`;
+                    },
+                  },
+                },
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: (context) => {
+                      const dataset = datasets[context.datasetIndex];
+                      const date = dataset.label.replace("Punch Data for ", "");
+                      const timeValue = context.raw.y;
+                      const hours = Math.floor(timeValue);
+                      const minutes = Math.floor((timeValue - hours) * 60);
+                      return `${date} - ${hours
+                        .toString()
+                        .padStart(2, "0")}:${minutes
+                        .toString()
+                        .padStart(2, "0")}`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        } catch (error) {
+          console.error("Error fetching punch data:", error);
+        }
+      };
+
+      // Fetching attendance data for a student
+      const fetchAttendanceData = async (studentId) => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/present/${studentId}`
+          );
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("Attendance Data for Student:", data);
+
+          // Bar Graph - Present vs Absent
+          const barGraphCtx = document
+            .getElementById("barGraph")
+            .getContext("2d");
+          new Chart(barGraphCtx, {
+            type: "bar",
+            data: {
+              labels: ["Present", "Absent"],
+              datasets: [
+                {
+                  label: "Attendance Count",
+                  data: [data.present_days, data.absent_days],
+                  backgroundColor: ["#28a745", "#dc3545"],
+                },
+              ],
+            },
+          });
+
+          // Pie Chart - Present vs Absent
+          const pieChartCtx = document
+            .getElementById("pieChart")
+            .getContext("2d");
+          new Chart(pieChartCtx, {
+            type: "pie",
+            data: {
+              labels: ["Present", "Absent"],
+              datasets: [
+                {
+                  data: [data.present_days, data.absent_days],
+                  backgroundColor: ["#28a745", "#dc3545"],
+                },
+              ],
+            },
+          });
+
+          $("#percent")
+            .html(`Attendance Percentage ${data.percentage}%`)
+            .attr("hidden", false);
+
+          $("#msg").html(data.msg).attr("hidden", false);
+        } catch (error) {
+          console.error("Error fetching attendance data:", error);
+        }
+      };
+
+      const downloadpdf = async (studentId) => {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/download/${studentId}`
+          ); // Replace with actual endpoint
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // Generate PDF (using jsPDF or other libraries as per your needs)
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF();
+          const columns = [
+            "Date",
+            "Email",
+            "Month",
+            "Name",
+            "Phone",
+            "Roll No",
+            "Status",
+            "Timing",
+          ];
+          const rows = data.map((item) => [
+            item.date,
+            item.email,
+            item.month,
+            item.name,
+            item.phone,
+            item.roll_no,
+            item.status,
+            item.timing,
+          ]);
+
+          doc.autoTable({
+            head: [columns],
+            body: rows,
+            startY: 30,
+          });
+
+          doc.save(`Student_Attendance_${studentId}.pdf`);
+        } catch (error) {
+          console.error("Error downloading or generating PDF:", error);
+        }
+      };
+
+      // Button click event to trigger PDF download
+      downloadButton.addEventListener("click", function () {
+        const studentId = studentSelect.value;
+        if (studentId) {
+          downloadpdf(studentId);
+        } else {
+          alert("Please select a student first.");
+        }
+      });
+    </script>
+  </body>
+</html>
